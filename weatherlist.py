@@ -2,7 +2,7 @@ import requests
 import json
 import ssl
 import smtplib
-import datetime
+import datetime as dt
 import csv
 from decouple import config
 
@@ -11,10 +11,16 @@ password = config('mailer_pass')
 
 url_id = "http://api.openweathermap.org/data/2.5/weather?q={},{}&units=imperial&appid={}"
 
+#gmail / api vars
 port = 465
 password = config('weather_api_pass')
 context = ssl.create_default_context()
 sender_email = config('sender_email')
+
+#time vars for schedule
+current_time = dt.datetime.now()
+current_hour = (current_time.hour)
+current_min  = (current_time.minute)
 
 
 #define our CSV-import-Class
@@ -43,9 +49,10 @@ def get_forecast_by_recipient(recipient):
     weather_data = json.loads(response.text)
     return Forecast(weather_data['main']['temp'], weather_data['main']['feels_like'], recipient)
 
-def SendEmail(forecast):
+def send_email(forecast):
     message =("""
-        Your report for {}, {}
+        Your lunchtime weather report for {}, {}
+
 
 
         It is {} degrees
@@ -56,11 +63,16 @@ def SendEmail(forecast):
                             context=context) as server:
         server.login(sender_email,password)
         server.sendmail(sender_email,forecast.recipient.email,message)
+        server.quit()
 
 #to convert CSV data into ListReceipient objects, then added to ObjectList
-with open('mailinglist.csv','r') as read_csv:
-    reader = csv.reader(read_csv,delimiter=',')
-    for row in reader:
-        u = ListRecipient(*row)
-        forecast=get_forecast_by_recipient(u)
-        SendEmail(forecast)
+if current_hour == 11 and current_min == 55:
+    with open('mailinglist.csv','r') as read_csv:
+        reader = csv.reader(read_csv,delimiter=',')
+        for row in reader:
+            u = ListRecipient(*row)
+            forecast=get_forecast_by_recipient(u)
+            send_email(forecast)
+    print('Success!')
+else:
+    print('Not sent, tray again later')
