@@ -66,7 +66,7 @@ def send_email(forecast):
         server.quit()
 
 #to convert CSV data into ListReceipient objects, then added to ObjectList
-if current_hour == 11 and current_min == 55:
+if current_hour == 11 and current_min == 59:
     with open('mailinglist.csv','r') as read_csv:
         reader = csv.reader(read_csv,delimiter=',')
         for row in reader:
