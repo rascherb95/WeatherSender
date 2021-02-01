@@ -50,13 +50,11 @@ def get_forecast_by_recipient(recipient):
     return Forecast(weather_data['main']['temp'], weather_data['main']['feels_like'], recipient)
 
 def send_email(forecast):
-    message =("""
-        Your lunchtime weather report for {}, {}
+    message =("""Your lunchtime weather report for {}, {}
 
 
-
-        It is {} degrees
-        It feels like {} degress
+    It is {} degrees
+    It feels like {} degress
 
         """.format(forecast.recipient.city,forecast.recipient.state,forecast.air_temp,forecast.real_feel))
     with smtplib.SMTP_SSL('smtp.gmail.com', port,
@@ -65,7 +63,7 @@ def send_email(forecast):
         server.sendmail(sender_email,forecast.recipient.email,message)
         server.quit()
 
-#to convert CSV data into ListReceipient objects, then added to ObjectList
+#just to double check it only sends once
 if current_hour == 11 and current_min == 59:
     with open('mailinglist.csv','r') as read_csv:
         reader = csv.reader(read_csv,delimiter=',')
@@ -75,4 +73,4 @@ if current_hour == 11 and current_min == 59:
             send_email(forecast)
     print('Success!')
 else:
-    print('Not sent, tray again later')
+    print('Not sent, try again later')
